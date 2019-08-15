@@ -1,0 +1,26 @@
+---
+- hosts: all
+  gather_facts: true
+  vars:
+    shell_script_output_file: ./
+  tasks:
+    - name: Remote execute the shell script of '{{ shell_script }}'
+      script: "{{ shell_script }}"
+      register: shell_script_result
+
+    - name: Output the results of '{{ shell_script }}' script 
+      debug:
+        msg: "{{shell_script_result.stdout_lines }}"
+
+    - name: Create the results folder {{ shell_script_output_file }}/{{ shell_script | basename }}/{{ ansible_date_time.iso8601_basic_short }}
+      local_action:
+        module: file
+        state: directory
+        path: "{{ shell_script_output_file }}/{{ shell_script | basename }}/{{ ansible_date_time.iso8601_basic_short }}"
+      run_once: yes
+
+    - name: Generate the shell script '{{ shell_script }}' results for {{ shell_script_output_file }}/{{ shell_script | basename }}/{{ ansible_date_time.iso8601_basic_short }}
+      local_action:
+        module: copy
+        content: "{{shell_script_result.stdout }}"
+        dest: "{{ shell_script_output_file }}/{{ shell_script | basename }}/{{ ansible_date_time.iso8601_basic_short }}/{{ ansible_fqdn }}.txt"
