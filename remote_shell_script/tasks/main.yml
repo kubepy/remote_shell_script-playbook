@@ -1,0 +1,30 @@
+---
+# tasks file for remote_shell_script
+- name: Gather Facts the hostname/fqdn
+  setup:
+    filter: ansible_fqdn    
+
+- name: Fetch the current system timestamp
+  set_fact:
+    fetch_timestamp: "{{ lookup('pipe', 'date --utc +%Y%m%dT%H%M%S') }}"
+    
+- name: Remote execute the shell script of '{{ shell_script }}'
+  script: "{{ shell_script }}"
+  register: shell_script_results
+
+- name: Output the results of '{{ shell_script }}' script
+  debug:
+    msg: "{{shell_script_results.stdout_lines }}"
+
+- name: Create the results folder {{ output_path }}/{{ shell_script | basename }}/{{ fetch_timestamp }}
+  local_action:
+    module: file
+    state: directory
+    path: "{{ output_path }}/{{ shell_script | basename }}/{{ fetch_timestamp }}"
+  run_once: yes
+
+- name: Generate the shell script '{{ shell_script }}' results for {{ output_path }}/{{ shell_script | basename }}/{{ fetch_timestamp }}
+  local_action:
+    module: copy
+    content: "{{shell_script_results.stdout }}"
+    dest: "{{ output_path }}/{{ shell_script | basename }}/{{ fetch_timestamp }}/{{ ansible_fqdn }}.txt"

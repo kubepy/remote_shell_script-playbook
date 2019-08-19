@@ -1,0 +1,4 @@
+---
+# defaults file for remote_shell_script
+output_path: .
+shell_script: echo.sh
