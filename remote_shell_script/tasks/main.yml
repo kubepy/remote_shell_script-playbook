@@ -5,8 +5,15 @@
     filter: ansible_fqdn    
 
 - name: Fetch the current system timestamp
+  local_action:
+    module: shell
+    _raw_params: date --utc +%Y%m%dT%H%M%S
+  register: fetch_timestamp_result
+  run_once: yes
+
+- name: setup the current system timestamp
   set_fact:
-    fetch_timestamp: "{{ lookup('pipe', 'date --utc +%Y%m%dT%H%M%S') }}"
+    fetch_timestamp: "{{ fetch_timestamp_result.stdout }}"
     
 - name: Remote execute the shell script of '{{ shell_script }}'
   script: "{{ shell_script }}"
